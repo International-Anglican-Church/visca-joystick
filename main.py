@@ -8,6 +8,7 @@ pygame.display.init()
 pygame.joystick.init()
 
 print('Pan & Tilt: Left stick | Invert tilt: Click left stick')
+print('Zoom: Right stick')
 print('Select camera 1: X, 2: ◯, 3: △')
 print('Exit: Options')
 
