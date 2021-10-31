@@ -30,3 +30,7 @@ while True:
         pan_speed=round(-24 * axes_state[0]),
         tilt_speed=round(-24 * axes_state[1])
     )
+    time.sleep(0.07)
+
+    cam.zoom(round(-7 * axes_state[5]))
+    time.sleep(0.07)
