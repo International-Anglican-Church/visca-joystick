@@ -13,7 +13,7 @@ print('Select camera 1: X, 2: ◯, 3: △')
 print('Exit: Options')
 
 SENSITIVITY = [
-    [0, 0.07, 0.3, .8, 1],
+    [0, 0.07, 0.3, .9, 1],
     [0, 0, 2, 12, 24]
 ]
 
