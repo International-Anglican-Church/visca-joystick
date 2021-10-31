@@ -1,4 +1,6 @@
 import time
+import os
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 
 import pygame
 from visca_over_ip import Camera
