@@ -30,8 +30,9 @@ mappings = {
     'other': {'exit': 9, 'invert_tilt': 10}
 }
 if platform.system() != 'Linux':
-    mappings['other']['exit'] = 6
+    mappings['other'] = {'exit': 6, 'invert_tilt': 7}
     mappings['movement']['zoom'] = 3
+    mappings['brightness'] = {10: 1, 9: -1}
 
 NUM_AXES = 12
 axes_state = {idx: 0 for idx in range(NUM_AXES)}
