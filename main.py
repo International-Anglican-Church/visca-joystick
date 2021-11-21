@@ -11,6 +11,7 @@ pygame.joystick.init()
 
 print('Pan & Tilt: Left stick | Invert tilt: Click left stick')
 print('Zoom: Right stick')
+print('Brightness: Up: Right Trigger, Down: Left Trigger')
 print('Select camera 1: X, 2: ◯, 3: △')
 print('Exit: Options')
 
@@ -28,6 +29,7 @@ invert_tilt = True
 
 NUM_AXES = 12
 axes_state = {idx: 0 for idx in range(NUM_AXES)}
+trigger_state = [False, False]
 
 
 def get_pantilt_speed(axis_position: float, invert=True) -> int:
@@ -50,6 +52,12 @@ while True:
         if btn_no == 9:
             exit(0)
 
+        elif btn_no == 6:
+            trigger_state[0] = True
+
+        elif btn_no == 7:
+            trigger_state[1] = True
+
         elif btn_no in camera_mappings:
             update_cam = True
             camera_index = camera_mappings[btn_no]
@@ -69,6 +77,20 @@ while True:
 
         update_cam = False
 
+    button_releases = pygame.event.get(eventtype=pygame.JOYBUTTONUP)
+    for event in button_releases:
+        btn_no = event.dict['button']
+        if btn_no == 6:
+            trigger_state[0] = False
+
+        if btn_no == 7:
+            trigger_state[1] = False
+
+    if trigger_state[0]:
+        cam.decrease_excomp()
+
+    if trigger_state[1]:
+        cam.increase_excomp()
 
     events = pygame.event.get(eventtype=pygame.JOYAXISMOTION)
 
