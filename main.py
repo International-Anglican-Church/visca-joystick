@@ -4,11 +4,12 @@ os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 
 import pygame
 from visca_over_ip import Camera
+from visca_over_ip.exceptions import ViscaException
 from numpy import interp
 
 pygame.display.init()
 pygame.joystick.init()
-j = pygame.joystick.Joystick(0)
+joystick = pygame.joystick.Joystick(0)
 
 print('Pan & Tilt: Left stick | Invert tilt: Click left stick')
 print('Zoom: Right stick')
@@ -26,18 +27,14 @@ ips = [f'172.16.0.20{idx}' for idx in range(1, 4)]
 mappings = {
     'cam_select': {1: 0, 2: 1, 3: 2},
     'movement': {'pan': 0, 'tilt': 1, 'zoom': 5},
-    'brightness': {7: 1, 6: -1},
+    'brightness': {'up': 7, 'down': 6},
     'other': {'exit': 9, 'invert_tilt': 10}
 }
 if platform.system() != 'Linux':
     mappings['other'] = {'exit': 6, 'invert_tilt': 7}
     mappings['movement']['zoom'] = 3
-    mappings['brightness'] = {10: 1, 9: -1}
+    mappings['brightness'] = {'up': 10, 'down': 9}
     mappings['cam_select'] = {0: 0, 1: 1, 3: 2}
-
-NUM_AXES = 12
-axes_state = {idx: 0 for idx in range(NUM_AXES)}
-brightness_direction = 0
 
 camera_index = 0
 invert_tilt = True
@@ -75,31 +72,29 @@ while True:
 
     if update_cam or cam is None:
         if cam:
-            cam.zoom_stop()
-            cam.pantilt_stop()
+            cam.zoom(0)
+            cam.pantilt(0, 0)
             cam._sock.close()
 
         cam = Camera(ips[camera_index])
         print(f"Camera {camera_index + 1}")
 
+        try:
+            cam.zoom(0)
+        except ViscaException:
+            pass
+
         update_cam = False
 
-    if any(event.dict['button'] in mappings['brightness'] for event in pygame.event.get(eventtype=pygame.JOYBUTTONUP)):
-        brightness_direction = 0
+    if joystick.get_button(mappings['brightness']['up']):
+        cam.increase_exposure_compensation()
 
-    if brightness_direction == -1:
-        cam.decrease_excomp()
-    elif brightness_direction == 1:
-        cam.increase_excomp()
-
-    events = pygame.event.get(eventtype=pygame.JOYAXISMOTION)
-
-    for event in events:
-        axes_state[event.dict['axis']] = event.value
+    if joystick.get_button(mappings['brightness']['down']):
+        cam.decrease_exposure_compensation()
 
     cam.pantilt(
-        pan_speed=get_pantilt_speed(axes_state[mappings['movement']['pan']]),
-        tilt_speed=get_pantilt_speed(axes_state[mappings['movement']['tilt']], invert_tilt)
+        pan_speed=get_pantilt_speed(joystick.get_axis(mappings['movement']['pan'])),
+        tilt_speed=get_pantilt_speed(joystick.get_axis(mappings['movement']['tilt'], invert_tilt))
     )
 
-    cam.zoom(round(-7 * axes_state[mappings['movement']['zoom']]))
+    cam.zoom(round(-7 * joystick.get_axis(mappings['movement']['zoom'])))
