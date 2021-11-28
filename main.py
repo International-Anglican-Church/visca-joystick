@@ -94,7 +94,7 @@ while True:
 
     cam.pantilt(
         pan_speed=get_pantilt_speed(joystick.get_axis(mappings['movement']['pan'])),
-        tilt_speed=get_pantilt_speed(joystick.get_axis(mappings['movement']['tilt'], invert_tilt))
+        tilt_speed=get_pantilt_speed(joystick.get_axis(mappings['movement']['tilt']), invert_tilt)
     )
 
     cam.zoom(round(-7 * joystick.get_axis(mappings['movement']['zoom'])))
