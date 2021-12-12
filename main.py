@@ -129,12 +129,13 @@ while True:
             cam._sock.close()
 
         cam = Camera(ips[camera_index])
-        print(f"Camera {camera_index + 1}")
 
         try:
             cam.zoom(0)
         except ViscaException:
             pass
+
+        print(f"Camera {camera_index + 1}")
 
         update_cam = False
 
