@@ -1,5 +1,7 @@
 import platform
 import os
+import time
+
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 
 import pygame
@@ -28,16 +30,18 @@ mappings = {
     'cam_select': {1: 0, 2: 1, 3: 2},
     'movement': {'pan': 0, 'tilt': 1, 'zoom': 5},
     'brightness': {'up': 7, 'down': 6},
-    'other': {'exit': 9, 'invert_tilt': 10}
+    'other': {'exit': 9, 'invert_tilt': 10, 'configure': 3}
 }
 if platform.system() != 'Linux':
-    mappings['other'] = {'exit': 6, 'invert_tilt': 7}
+    mappings['other'] = {'exit': 6, 'invert_tilt': 7, 'configure': 3}
     mappings['movement']['zoom'] = 3
     mappings['brightness'] = {'up': 10, 'down': 9}
     mappings['cam_select'] = {0: 0, 1: 1, 3: 2}
 
 camera_index = 0
 invert_tilt = True
+cam = None
+
 
 def get_pantilt_speed(axis_position: float, invert=True) -> int:
     sign = 1 if axis_position >= 0 else -1
@@ -49,7 +53,55 @@ def get_pantilt_speed(axis_position: float, invert=True) -> int:
     )
 
 
-cam = None
+def configure():
+    global cam
+
+    print('Press triangle to configure cameras or any other button to skip')
+    while not pygame.event.peek(eventtype=pygame.JOYBUTTONDOWN):
+        time.sleep(0.05)
+
+    event = pygame.event.get(eventtype=pygame.JOYBUTTONDOWN)[0]
+    if event.dict['button'] == mappings['other']['configure']:
+        print(f'Configuring...')
+
+        for ip in ips:
+            cam = Camera(ip)
+            cam.set_power(True)
+            cam._sock.close()
+
+        time.sleep(20)
+
+        for ip in ips:
+            cam = Camera(ip)
+            cam.recall_preset(8)
+            cam._sock.close()
+
+        time.sleep(2)
+        cam = None
+
+
+def shut_down():
+    global cam
+    if cam is not None:
+        cam._sock.close()
+
+    print('Press triangle to shut down cameras or any other button to leave them on')
+    while not pygame.event.peek(eventtype=pygame.JOYBUTTONDOWN):
+        time.sleep(0.05)
+
+    event = pygame.event.get(eventtype=pygame.JOYBUTTONDOWN)[0]
+    if event.dict['button'] == mappings['other']['configure']:
+        for ip in ips:
+            cam = Camera(ip)
+            cam.set_power(False)
+            cam._sock.close()
+
+    exit(0)
+
+
+configure()
+
+
 while True:
     button_presses = pygame.event.get(eventtype=pygame.JOYBUTTONDOWN)
 
@@ -57,7 +109,7 @@ while True:
     for event in button_presses:
         btn_no = event.dict['button']
         if btn_no == mappings['other']['exit']:
-            exit(0)
+            shut_down()
 
         elif btn_no in mappings['brightness']:
             brightness_direction = mappings['brightness'][btn_no]
