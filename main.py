@@ -9,9 +9,6 @@ from visca_over_ip import Camera
 from visca_over_ip.exceptions import ViscaException
 from numpy import interp
 
-pygame.display.init()
-pygame.joystick.init()
-joystick = pygame.joystick.Joystick(0)
 
 print('Pan & Tilt: Left stick | Invert tilt: Click left stick')
 print('Zoom: Right stick')
@@ -41,6 +38,21 @@ if platform.system() != 'Linux':
 camera_index = 0
 invert_tilt = True
 cam = None
+joystick = None
+joystick_reset_time = None
+
+
+def joystick_init():
+    global joystick, joystick_reset_time
+
+    pygame.joystick.quit()
+    pygame.display.quit()
+
+    pygame.display.init()
+    pygame.joystick.init()
+    joystick = pygame.joystick.Joystick(0)
+
+    joystick_reset_time = time.time() + 120
 
 
 def get_pantilt_speed(axis_position: float, invert=True) -> int:
@@ -99,6 +111,7 @@ def shut_down():
     exit(0)
 
 
+joystick_init()
 configure()
 
 
@@ -149,5 +162,8 @@ while True:
         pan_speed=get_pantilt_speed(joystick.get_axis(mappings['movement']['pan'])),
         tilt_speed=get_pantilt_speed(joystick.get_axis(mappings['movement']['tilt']), invert_tilt)
     )
-
+    time.sleep(0.03)
     cam.zoom(round(-7 * joystick.get_axis(mappings['movement']['zoom'])))
+
+    if time.time() >= joystick_reset_time:
+        joystick_init()
