@@ -11,27 +11,29 @@ from numpy import interp
 
 
 print('Pan & Tilt: Left stick | Invert tilt: Click left stick')
-print('Zoom: Right stick')
+print('Zoom: Right stick | Toggle manual focus: Click right stick')
 print('Brightness: Up: Right Trigger, Down: Left Trigger')
 print('Select camera 1: X, 2: ◯, 3: △')
 print('Exit: Options')
 
-SENSITIVITY = [
-    [0, 0.07, 0.3, .9, 1],
-    [0, 0, 2, 12, 24]
-]
+SENSITIVITY = {
+    'pan_tilt': {'joy': [0, 0.07, 0.3, .9, 1], 'cam': [0, 0, 2, 12, 24]},
+    'zoom': {'joy': [0, 0.1, 1], 'cam': [0, 0, 7]},
+    'focus': {'joy': [0, 0.1, 0.11, 0.85, 1], 'cam': [0, 0, 1, 1, 2]}
+}
 
 ips = [f'172.16.0.20{idx}' for idx in range(1, 4)]
 
 mappings = {
     'cam_select': {1: 0, 2: 1, 3: 2},
-    'movement': {'pan': 0, 'tilt': 1, 'zoom': 5},
+    'movement': {'pan': 0, 'tilt': 1, 'zoom': 5, 'focus': 2},
     'brightness': {'up': 7, 'down': 6},
-    'other': {'exit': 9, 'invert_tilt': 10, 'configure': 3}
+    'other': {'exit': 9, 'invert_tilt': 10, 'configure': 3, 'manual_focus': 11}
 }
 if platform.system() != 'Linux':
-    mappings['other'] = {'exit': 6, 'invert_tilt': 7, 'configure': 3}
+    mappings['other'] = {'exit': 6, 'invert_tilt': 7, 'configure': 3, 'manual_focus': 8}
     mappings['movement']['zoom'] = 3
+    mappings['movement']['focus'] = 2
     mappings['brightness'] = {'up': 10, 'down': 9}
     mappings['cam_select'] = {0: 0, 1: 1, 3: 2}
 
@@ -40,6 +42,7 @@ invert_tilt = True
 cam = None
 joystick = None
 joystick_reset_time = None
+manual_focus = [False] * len(ips)
 
 
 def joystick_init():
@@ -55,13 +58,13 @@ def joystick_init():
     joystick_reset_time = time.time() + 120
 
 
-def get_pantilt_speed(axis_position: float, invert=True) -> int:
+def joy_pos_to_cam_speed(axis_position: float, sensitivity_mapping: dict, invert=True) -> int:
     sign = 1 if axis_position >= 0 else -1
     if invert:
         sign *= -1
 
     return sign * round(
-        interp(abs(axis_position), *SENSITIVITY)
+        interp(abs(axis_position), sensitivity_mapping['joy'], sensitivity_mapping['cam'])
     )
 
 
@@ -131,6 +134,16 @@ while True:
             update_cam = True
             camera_index = mappings['cam_select'][btn_no]
 
+        elif btn_no == mappings['other']['manual_focus']:
+            manual_focus[camera_index] = not manual_focus[camera_index]
+            if manual_focus[camera_index] is True and cam is not None:
+                cam.focus_mode('manual')
+                print('Manual focus')
+
+            elif manual_focus[camera_index] is False and cam is not None:
+                cam.focus_mode('auto')
+                print('Auto focus')
+
         elif btn_no == mappings['other']['invert_tilt']:
             invert_tilt = not invert_tilt
             print('Tilt', 'inverted' if not invert_tilt else 'not inverted')
@@ -159,11 +172,19 @@ while True:
         cam.decrease_exposure_compensation()
 
     cam.pantilt(
-        pan_speed=get_pantilt_speed(joystick.get_axis(mappings['movement']['pan'])),
-        tilt_speed=get_pantilt_speed(joystick.get_axis(mappings['movement']['tilt']), invert_tilt)
+        pan_speed=joy_pos_to_cam_speed(
+            joystick.get_axis(mappings['movement']['pan']),
+            SENSITIVITY['pan_tilt']),
+        tilt_speed=joy_pos_to_cam_speed(
+            joystick.get_axis(mappings['movement']['tilt']),
+            SENSITIVITY['pan_tilt'], invert_tilt)
     )
     time.sleep(0.03)
-    cam.zoom(round(-7 * joystick.get_axis(mappings['movement']['zoom'])))
+    cam.zoom(joy_pos_to_cam_speed(joystick.get_axis(mappings['movement']['zoom']), SENSITIVITY['zoom']))
+
+    if manual_focus[camera_index]:
+        time.sleep(0.03)
+        cam.manual_focus(joy_pos_to_cam_speed(joystick.get_axis(mappings['movement']['focus']), SENSITIVITY['focus']))
 
     if time.time() >= joystick_reset_time:
         joystick_init()
