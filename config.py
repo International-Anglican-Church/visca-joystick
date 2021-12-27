@@ -1,5 +1,8 @@
 import platform
 
+from visca_over_ip import CachingCamera as Camera
+# from visca_over_ip import Camera
+
 num_cams = 3
 
 sensitivity_tables = {

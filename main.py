@@ -4,11 +4,10 @@ import time
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 
 import pygame
-from visca_over_ip import Camera
 from visca_over_ip.exceptions import ViscaException
 from numpy import interp
 
-from config import ips, mappings, sensitivity_tables, help_text
+from config import ips, mappings, sensitivity_tables, help_text, Camera
 from startup_shutdown import shut_down, configure
 
 
