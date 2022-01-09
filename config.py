@@ -24,8 +24,8 @@ else:
     mappings = {
         'cam_select': {0: 0, 1: 1, 3: 2},
         'movement': {'pan': 0, 'tilt': 1, 'zoom': 3},
-        'brightness': {'up': 4, 'down': 5},
-        'focus': {'near': 4, 'far': 5},
+        'brightness': {'up': 5, 'down': 4},
+        'focus': {'near': 9, 'far': 10},
         'other': {'exit': 6, 'invert_tilt': 7, 'configure': 3}
     }
 
