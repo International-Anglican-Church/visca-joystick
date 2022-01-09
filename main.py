@@ -87,10 +87,10 @@ def update_focus():
 
 
 def update_brightness():
-    if joystick.get_button(mappings['brightness']['up']):
+    if joystick.get_axis(mappings['brightness']['up']) > .9:
         cam.increase_exposure_compensation()
 
-    if joystick.get_button(mappings['brightness']['down']):
+    if joystick.get_axis(mappings['brightness']['down']) > .9:
         cam.decrease_exposure_compensation()
 
 
@@ -123,12 +123,6 @@ def handle_button_presses():
         if btn_no == mappings['other']['exit']:
             shut_down(cam)
 
-        elif btn_no in mappings['focus'].values():
-            update_focus()
-
-        elif btn_no in mappings['brightness'].values():
-            update_brightness()
-
         elif btn_no in mappings['cam_select']:
             cam = connect_to_camera(mappings['cam_select'][btn_no])
 
@@ -144,6 +138,8 @@ cam = connect_to_camera(0)
 
 while True:
     handle_button_presses()
+    update_brightness()
+    update_focus()
 
     cam.pantilt(
         pan_speed=joy_pos_to_cam_speed(joystick.get_axis(mappings['movement']['pan']), 'pan_tilt'),

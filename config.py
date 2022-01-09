@@ -12,20 +12,22 @@ sensitivity_tables = {
 
 ips = [f'172.16.0.20{idx + 1}' for idx in range(num_cams)]
 
-mappings = {
-    'cam_select': {1: 0, 2: 1, 3: 2},
-    'movement': {'pan': 0, 'tilt': 1, 'zoom': 5, 'focus': 2},
-    'brightness': {'up': 7, 'down': 6},
-    'focus': {'near': 4, 'far': 5},
-    'other': {'exit': 9, 'invert_tilt': 10, 'configure': 3}
-}
-
-if platform.system() != 'Linux':
-    mappings['other'] = {'exit': 6, 'invert_tilt': 7, 'configure': 3}
-    mappings['movement']['zoom'] = 3
-    mappings['movement']['focus'] = 2
-    mappings['brightness'] = {'up': 10, 'down': 9}
-    mappings['cam_select'] = {0: 0, 1: 1, 3: 2}
+if platform.system() == 'Linux':
+    mappings = {
+        'cam_select': {1: 0, 2: 1, 3: 2},
+        'movement': {'pan': 0, 'tilt': 1, 'zoom': 5},
+        'brightness': {'up': 4, 'down': 3},
+        'focus': {'near': 4, 'far': 5},
+        'other': {'exit': 9, 'invert_tilt': 10, 'configure': 3}
+    }
+else:
+    mappings = {
+        'cam_select': {0: 0, 1: 1, 3: 2},
+        'movement': {'pan': 0, 'tilt': 1, 'zoom': 3},
+        'brightness': {'up': 4, 'down': 5},
+        'focus': {'near': 4, 'far': 5},
+        'other': {'exit': 6, 'invert_tilt': 7, 'configure': 3}
+    }
 
 
 help_text = """Pan & Tilt: Left stick | Invert tilt: Click left stick'
