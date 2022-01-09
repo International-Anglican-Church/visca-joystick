@@ -15,6 +15,7 @@ invert_tilt = True
 cam = None
 joystick = None
 joystick_reset_time = None
+last_focus_time = None
 
 
 def joystick_init():
@@ -54,23 +55,34 @@ def joy_pos_to_cam_speed(axis_position: float, table_name: str, invert=True) -> 
 
 def update_focus():
     """Reads the state of the bumpers and toggles manual focus, focuses near, or focuses far."""
+    global last_focus_time
+    time_since_last_adjust = time.time() - last_focus_time if last_focus_time else 30
+
     focus_near = joystick.get_button(mappings['focus']['near'])
     focus_far = joystick.get_button(mappings['focus']['far'])
-    manual_focus = cam.get_focus_mode() != 'manual'
+    manual_focus = cam.get_focus_mode() == 'manual'
 
-    if focus_near and focus_far:
+    if focus_near and focus_far and time_since_last_adjust > .4:
+        last_focus_time = time.time()
         if manual_focus:
-            cam.set_focus_mode('manual')
-            print('Manual focus')
-        else:
             cam.set_focus_mode('auto')
             print('Auto focus')
+        else:
+            cam.set_focus_mode('manual')
+            print('Manual focus')
 
-    elif focus_far and manual_focus:
+    elif focus_far and manual_focus and time_since_last_adjust > .1:
+        last_focus_time = time.time()
+
         cam.manual_focus(-1)
-    elif focus_near and manual_focus:
+        time.sleep(.01)
+        cam.manual_focus(0)
+
+    elif focus_near and manual_focus and time_since_last_adjust > .1:
+        last_focus_time = time.time()
+
         cam.manual_focus(1)
-    elif manual_focus:
+        time.sleep(.01)
         cam.manual_focus(0)
 
 
