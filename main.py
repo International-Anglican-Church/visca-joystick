@@ -131,22 +131,32 @@ def handle_button_presses():
             print('Tilt', 'inverted' if not invert_tilt else 'not inverted')
 
 
-print(help_text)
-joystick_init()
-configure()
-cam = connect_to_camera(0)
+def main_loop():
+    while True:
+        handle_button_presses()
+        update_brightness()
+        update_focus()
 
-while True:
-    handle_button_presses()
-    update_brightness()
-    update_focus()
+        cam.pantilt(
+            pan_speed=joy_pos_to_cam_speed(joystick.get_axis(mappings['movement']['pan']), 'pan'),
+            tilt_speed=joy_pos_to_cam_speed(joystick.get_axis(mappings['movement']['tilt']), 'tilt', invert_tilt)
+        )
+        time.sleep(0.03)
+        cam.zoom(joy_pos_to_cam_speed(joystick.get_axis(mappings['movement']['zoom']), 'zoom'))
 
-    cam.pantilt(
-        pan_speed=joy_pos_to_cam_speed(joystick.get_axis(mappings['movement']['pan']), 'pan'),
-        tilt_speed=joy_pos_to_cam_speed(joystick.get_axis(mappings['movement']['tilt']), 'tilt', invert_tilt)
-    )
-    time.sleep(0.03)
-    cam.zoom(joy_pos_to_cam_speed(joystick.get_axis(mappings['movement']['zoom']), 'zoom'))
+        if time.time() >= joystick_reset_time:
+            joystick_init()
 
-    if time.time() >= joystick_reset_time:
-        joystick_init()
+
+if __name__ == "__main__":
+    print(help_text)
+    joystick_init()
+    configure()
+    cam = connect_to_camera(0)
+
+    while True:
+        try:
+            main_loop()
+
+        except Exception as exc:
+            print(exc)
