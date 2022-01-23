@@ -1,3 +1,4 @@
 pygame
 visca_over_ip
 numpy
+plotly
