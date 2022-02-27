@@ -2,8 +2,7 @@ import platform
 
 from plotly import graph_objects as go
 
-from visca_over_ip import CachingCamera as Camera
-# from visca_over_ip import Camera
+from visca_over_ip import Camera
 
 num_cams = 3
 
@@ -20,7 +19,6 @@ if platform.system() == 'Linux':
         'cam_select': {1: 0, 2: 1, 3: 2},
         'movement': {'pan': 0, 'tilt': 1, 'zoom': 5},
         'brightness': {'up': 4, 'down': 3},
-        'focus': {'near': 4, 'far': 5},
         'other': {'exit': 9, 'invert_tilt': 10, 'configure': 3}
     }
 else:
@@ -28,7 +26,6 @@ else:
         'cam_select': {0: 0, 1: 1, 3: 2},
         'movement': {'pan': 0, 'tilt': 1, 'zoom': 3},
         'brightness': {'up': 5, 'down': 4},
-        'focus': {'near': 9, 'far': 10},
         'other': {'exit': 6, 'invert_tilt': 7, 'configure': 3}
     }
 
@@ -36,7 +33,6 @@ else:
 help_text = """Pan & Tilt: Left stick | Invert tilt: Click left stick'
 Zoom: Right stick
 Brightness: Up: Right trigger, Down: Left trigger
-Manual focus: Left and right bumpers
 Select camera 1: X, 2: ◯, 3: △
 Exit: Options"""
 
