@@ -140,7 +140,6 @@ def handle_preset_buttons():
         btn_no = event.dict['button']
 
         if btn_no in mappings['preset']:
-            print('hello')
             cam.recall_preset(mappings['preset'][btn_no])
 
     for btn_no in mappings['preset']:
