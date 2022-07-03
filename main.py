@@ -7,7 +7,7 @@ import pygame
 from visca_over_ip.exceptions import ViscaException
 from numpy import interp
 
-from config import ips, mappings, sensitivity_tables, help_text, Camera
+from config import ips, mappings, sensitivity_tables, help_text, Camera, long_press_time
 from startup_shutdown import shut_down, configure
 
 
@@ -16,6 +16,7 @@ cam = None
 joystick = None
 joystick_reset_time = None
 last_focus_time = None
+button_down_time = {key: None for key in mappings['preset']}
 
 
 def joystick_init():
@@ -131,11 +132,35 @@ def handle_button_presses():
             print('Tilt', 'inverted' if not invert_tilt else 'not inverted')
 
 
+def handle_preset_buttons():
+    """Distinguishes between short presses and long presses for recalling and saving presets"""
+    global cam, button_down_time
+
+    for event in pygame.event.get(eventtype=pygame.JOYBUTTONUP):
+        btn_no = event.dict['button']
+
+        if btn_no in mappings['preset']:
+            print('hello')
+            cam.recall_preset(mappings['preset'][btn_no])
+
+    for btn_no in mappings['preset']:
+        if joystick.get_button(btn_no):
+            if button_down_time[btn_no] is None:
+                button_down_time[btn_no] = time.time()
+
+            elif time.time() - button_down_time[btn_no] > long_press_time:
+                cam.save_preset(mappings['preset'][btn_no])
+
+        else:
+            button_down_time[btn_no] = None
+
+
 def main_loop():
     while True:
         handle_button_presses()
         update_brightness()
         update_focus()
+        handle_preset_buttons()
 
         cam.pantilt(
             pan_speed=joy_pos_to_cam_speed(joystick.get_axis(mappings['movement']['pan']), 'pan'),
