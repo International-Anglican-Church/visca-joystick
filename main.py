@@ -32,7 +32,7 @@ def joystick_init():
     pygame.joystick.init()
     joystick = pygame.joystick.Joystick(0)
 
-    joystick_reset_time = time.time() + 120
+    joystick_reset_time = time.time() + 20
 
 
 def joy_pos_to_cam_speed(axis_position: float, table_name: str, invert=True) -> int:
