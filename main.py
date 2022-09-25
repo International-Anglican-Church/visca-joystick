@@ -19,9 +19,10 @@ last_focus_time = None
 button_down_time = {key: None for key in mappings['preset']}
 
 
-def joystick_init():
+def joystick_init(print_battery=False):
     """Initializes pygame and the joystick.
     This is done occasionally because pygame seems to put the controller to sleep otherwise
+    :param print_battery: If set to True, the battery charge status of the joystick will be printed out
     """
     global joystick, joystick_reset_time
 
@@ -31,6 +32,9 @@ def joystick_init():
     pygame.display.init()
     pygame.joystick.init()
     joystick = pygame.joystick.Joystick(0)
+
+    if print_battery:
+        print('Joystick battery is', joystick.get_power_level())
 
     joystick_reset_time = time.time() + 120
 
@@ -175,7 +179,7 @@ def main_loop():
 
 if __name__ == "__main__":
     print(help_text)
-    joystick_init()
+    joystick_init(print_battery=True)
     configure()
     cam = connect_to_camera(0)
 
