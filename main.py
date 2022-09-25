@@ -29,10 +29,11 @@ def joystick_init(print_battery=False):
     pygame.joystick.quit()
     pygame.display.quit()
 
+    pygame.display.init()
+    pygame.joystick.init()
+
     while True:
         try:
-            pygame.display.init()
-            pygame.joystick.init()
             joystick = pygame.joystick.Joystick(0)
         except pygame.error:
             input('No controller found. Please connect one then press enter: ')
