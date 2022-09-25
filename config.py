@@ -15,7 +15,7 @@ sensitivity_tables = {
 
 long_press_time = 2
 
-ips = [f'172.16.0.20{idx + 1}' for idx in range(num_cams)]
+ips = ['172.16.0.201', '172.16.0.202', '172.16.0.206']
 
 if platform.system() == 'Linux':
     mappings = {
@@ -32,7 +32,7 @@ else:
         'movement': {'pan': 0, 'tilt': 1, 'zoom': 3},
         'brightness': {'up': 5, 'down': 4},
         'focus': {'near': 9, 'far': 10},
-        'preset': {13: 8},
+        'preset': {11: 8, 12: 9, 13: 10, 14: 11},
         'other': {'exit': 6, 'invert_tilt': 7, 'configure': 3}
     }
 

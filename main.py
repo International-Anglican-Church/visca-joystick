@@ -36,7 +36,7 @@ def joystick_init(print_battery=False):
     if print_battery:
         print('Joystick battery is', joystick.get_power_level())
 
-    joystick_reset_time = time.time() + 120
+    joystick_reset_time = time.time() + 20
 
 
 def joy_pos_to_cam_speed(axis_position: float, table_name: str, invert=True) -> int:
@@ -144,7 +144,6 @@ def handle_preset_buttons():
         btn_no = event.dict['button']
 
         if btn_no in mappings['preset']:
-            print('hello')
             cam.recall_preset(mappings['preset'][btn_no])
 
     for btn_no in mappings['preset']:
