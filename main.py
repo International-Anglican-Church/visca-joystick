@@ -29,9 +29,15 @@ def joystick_init(print_battery=False):
     pygame.joystick.quit()
     pygame.display.quit()
 
-    pygame.display.init()
-    pygame.joystick.init()
-    joystick = pygame.joystick.Joystick(0)
+    while True:
+        try:
+            pygame.display.init()
+            pygame.joystick.init()
+            joystick = pygame.joystick.Joystick(0)
+        except pygame.error:
+            input('No controller found. Please connect one then press enter: ')
+        else:
+            break
 
     if print_battery:
         print('Joystick battery is', joystick.get_power_level())
@@ -177,8 +183,10 @@ def main_loop():
 
 
 if __name__ == "__main__":
-    print(help_text)
+    print('Welcome to VISCA Joystick!')
     joystick_init(print_battery=True)
+    print()
+    print(help_text)
     configure()
     cam = connect_to_camera(0)
 
