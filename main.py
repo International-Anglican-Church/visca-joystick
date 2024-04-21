@@ -191,6 +191,7 @@ if __name__ == "__main__":
         try:
             configure()
             cam = connect_to_camera(0)
+            break
         except Exception as exc:
             print(exc)
             print('Initialization error. Check that all network equipment is connected and powered on.')
