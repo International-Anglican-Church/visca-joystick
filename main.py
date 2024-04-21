@@ -186,10 +186,18 @@ def main_loop():
 if __name__ == "__main__":
     print('Welcome to VISCA Joystick!')
     joystick_init(print_battery=True)
+
+    while True:
+        try:
+            configure()
+            cam = connect_to_camera(0)
+        except Exception as exc:
+            print(exc)
+            print('Initialization error. Check that all network equipment is connected and powered on.')
+            input('Press enter to retry: ')
+
     print()
     print(help_text)
-    configure()
-    cam = connect_to_camera(0)
 
     while True:
         try:
