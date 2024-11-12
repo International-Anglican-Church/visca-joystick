@@ -3,46 +3,12 @@ import time
 
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 
-import pygame
 from visca_over_ip.exceptions import ViscaException
 from numpy import interp
 
-from config import ips, mappings, sensitivity_tables, help_text, Camera, long_press_time
+from config import ips, sensitivity_tables, Camera
 from startup_shutdown import shut_down, configure
-
-
-invert_tilt = True
-cam = None
-joystick = None
-joystick_reset_time = None
-last_focus_time = None
-button_down_time = {key: None for key in mappings['preset']}
-
-
-def joystick_init(print_battery=False):
-    """Initializes pygame and the joystick.
-    This is done occasionally because pygame seems to put the controller to sleep otherwise
-    :param print_battery: If set to True, the battery charge status of the joystick will be printed out
-    """
-    global joystick, joystick_reset_time
-
-    while True:
-        try:
-            pygame.joystick.quit()
-            pygame.display.quit()
-
-            pygame.display.init()
-            pygame.joystick.init()
-            joystick = pygame.joystick.Joystick(0)
-        except pygame.error:
-            input('No controller found. Please connect one then press enter: ')
-        else:
-            break
-
-    if print_battery:
-        print('Joystick battery is', joystick.get_power_level())
-
-    joystick_reset_time = time.time() + 20
+from controller import GameController, ButtonFunction, AxisFunction
 
 
 def joy_pos_to_cam_speed(axis_position: float, table_name: str, invert=True) -> int:
@@ -64,131 +30,104 @@ def joy_pos_to_cam_speed(axis_position: float, table_name: str, invert=True) -> 
     )
 
 
-def update_focus():
+last_focus_time = None
+
+def update_focus(controller: GameController, camera: Camera):
     """Reads the state of the bumpers and toggles manual focus, focuses near, or focuses far."""
     global last_focus_time
     time_since_last_adjust = time.time() - last_focus_time if last_focus_time else 30
 
-    focus_near = joystick.get_button(mappings['focus']['near'])
-    focus_far = joystick.get_button(mappings['focus']['far'])
-    manual_focus = cam.get_focus_mode() == 'manual'
+    focus_near = controller.is_button_pressed(ButtonFunction.FOCUS_NEAR)
+    focus_far = controller.is_button_pressed(ButtonFunction.FOCUS_FAR)
+    manual_focus = camera.get_focus_mode() == 'manual'
 
     if focus_near and focus_far and time_since_last_adjust > .4:
         last_focus_time = time.time()
         if manual_focus:
-            cam.set_focus_mode('auto')
+            camera.set_focus_mode('auto')
             print('Auto focus')
         else:
-            cam.set_focus_mode('manual')
+            camera.set_focus_mode('manual')
             print('Manual focus')
 
     elif focus_far and manual_focus and time_since_last_adjust > .1:
         last_focus_time = time.time()
 
-        cam.manual_focus(-1)
+        camera.manual_focus(-1)
         time.sleep(.01)
-        cam.manual_focus(0)
+        camera.manual_focus(0)
 
     elif focus_near and manual_focus and time_since_last_adjust > .1:
         last_focus_time = time.time()
 
-        cam.manual_focus(1)
+        camera.manual_focus(1)
         time.sleep(.01)
-        cam.manual_focus(0)
+        camera.manual_focus(0)
 
 
-def update_brightness():
-    if joystick.get_axis(mappings['brightness']['up']) > .9:
-        cam.increase_exposure_compensation()
-
-    if joystick.get_axis(mappings['brightness']['down']) > .9:
-        cam.decrease_exposure_compensation()
-
-
-def connect_to_camera(cam_index) -> Camera:
+def connect_to_camera(cam_index, current_camera=None) -> Camera:
     """Connects to the camera specified by cam_index and returns it"""
-    global cam
+    if current_camera:
+        current_camera.zoom(0)
+        current_camera.pantilt(0, 0)
+        current_camera.close_connection()
 
-    if cam:
-        cam.zoom(0)
-        cam.pantilt(0, 0)
-        cam.close_connection()
-
-    cam = Camera(ips[cam_index])
+    camera = Camera(ips[cam_index])
 
     try:
-        cam.zoom(0)
+        camera.zoom(0)
     except ViscaException:
         pass
 
     print(f"Camera {cam_index + 1}")
 
-    return cam
+    return camera
 
 
-def handle_button_presses():
-    global invert_tilt, cam
+def main_loop(controller: GameController, camera: Camera):
+    invert_tilt = False
 
-    for event in pygame.event.get(eventtype=pygame.JOYBUTTONDOWN):
-        btn_no = event.dict['button']
-        if btn_no == mappings['other']['exit']:
-            shut_down(cam)
-
-        elif btn_no in mappings['cam_select']:
-            cam = connect_to_camera(mappings['cam_select'][btn_no])
-
-        elif btn_no == mappings['other']['invert_tilt']:
-            invert_tilt = not invert_tilt
-            print('Tilt', 'inverted' if not invert_tilt else 'not inverted')
-
-
-def handle_preset_buttons():
-    """Distinguishes between short presses and long presses for recalling and saving presets"""
-    global cam, button_down_time
-
-    for event in pygame.event.get(eventtype=pygame.JOYBUTTONUP):
-        btn_no = event.dict['button']
-
-        if btn_no in mappings['preset']:
-            cam.recall_preset(mappings['preset'][btn_no])
-
-    for btn_no in mappings['preset']:
-        if joystick.get_button(btn_no):
-            if button_down_time[btn_no] is None:
-                button_down_time[btn_no] = time.time()
-
-            elif time.time() - button_down_time[btn_no] > long_press_time:
-                cam.save_preset(mappings['preset'][btn_no])
-
-        else:
-            button_down_time[btn_no] = None
-
-
-def main_loop():
     while True:
-        handle_button_presses()
-        update_brightness()
-        update_focus()
-        handle_preset_buttons()
+        for pressed_button in controller.get_button_presses():
+            if pressed_button == ButtonFunction.EXIT:
+                shut_down(controller, camera)
 
-        cam.pantilt(
-            pan_speed=joy_pos_to_cam_speed(joystick.get_axis(mappings['movement']['pan']), 'pan'),
-            tilt_speed=joy_pos_to_cam_speed(joystick.get_axis(mappings['movement']['tilt']), 'tilt', invert_tilt)
+            elif pressed_button in [ButtonFunction.CAM_SELECTS]:
+                camera = connect_to_camera(pressed_button.value, current_camera=camera)
+
+            elif pressed_button == ButtonFunction.INVERT_TILT:
+                invert_tilt = not invert_tilt
+                print('Tilt', 'inverted' if not invert_tilt else 'not inverted')
+
+        update_focus(controller, camera)
+
+        for short_press in controller.get_button_short_presses():
+            camera.recall_preset(short_press.value)
+
+        for long_press in controller.get_button_long_presses():
+            camera.save_preset(long_press.value)
+
+        if controller.get_axis(AxisFunction.BRIGHTNESS_UP) > .9:
+            camera.increase_exposure_compensation()
+
+        if controller.get_axis(AxisFunction.BRIGHTNESS_DOWN) > .9:
+            camera.decrease_exposure_compensation()
+
+        camera.pantilt(
+            pan_speed=joy_pos_to_cam_speed(controller.get_axis(AxisFunction.PAN), 'pan'),
+            tilt_speed=joy_pos_to_cam_speed(controller.get_axis(AxisFunction.TILT), 'tilt', invert_tilt)
         )
         time.sleep(0.03)
-        cam.zoom(joy_pos_to_cam_speed(joystick.get_axis(mappings['movement']['zoom']), 'zoom'))
-
-        if time.time() >= joystick_reset_time:
-            joystick_init()
+        camera.zoom(joy_pos_to_cam_speed(controller.get_axis(AxisFunction.ZOOM), 'zoom'))
 
 
 if __name__ == "__main__":
     print('Welcome to VISCA Joystick!')
-    joystick_init(print_battery=True)
+    cont = GameController()
 
     while True:
         try:
-            configure()
+            configure(cont)
             cam = connect_to_camera(0)
             break
         except Exception as exc:
@@ -196,12 +135,11 @@ if __name__ == "__main__":
             print('Initialization error. Check that all network equipment is connected and powered on.')
             input('Press enter to retry: ')
 
-    print()
-    print(help_text)
+    cont.print_mappings()
 
     while True:
         try:
-            main_loop()
+            main_loop(cont, cam)
 
         except Exception as exc:
             print(exc)

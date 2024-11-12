@@ -1,21 +1,17 @@
 import time
 
-import pygame
 from visca_over_ip import Camera
 
-from config import mappings, ips
+from config import ips
+from controller import GameController, ButtonFunction
 
 
-def configure():
+def configure(controller: GameController):
     """Allows the user to configure the cameras or skip this step
     If the user chooses to configure the cameras, they are powered on and preset 9 is recalled
     """
-    print('Press triangle to configure cameras or any other button to skip')
-    while not pygame.event.peek(eventtype=pygame.JOYBUTTONDOWN):
-        time.sleep(0.05)
-
-    event = pygame.event.get(eventtype=pygame.JOYBUTTONDOWN)[0]
-    if event.dict['button'] == mappings['other']['configure']:
+    print(f'Press {controller.get_button_name(ButtonFunction.CONFIRM)} to configure cameras or any other button to skip')
+    if controller.wait_for_button_press() == ButtonFunction.CONFIRM:
         print(f'Configuring...')
 
         for ip in ips:
@@ -33,19 +29,15 @@ def configure():
         time.sleep(2)
 
 
-def shut_down(current_camera: Camera):
+def shut_down(controller: GameController, current_camera: Camera):
     """Shuts down the program.
     The user is asked if they want to shut down the cameras as well.
     """
     if current_camera is not None:
         current_camera.close_connection()
 
-    print('Press triangle to shut down cameras or any other button to leave them on')
-    while not pygame.event.peek(eventtype=pygame.JOYBUTTONDOWN):
-        time.sleep(0.05)
-
-    event = pygame.event.get(eventtype=pygame.JOYBUTTONDOWN)[0]
-    if event.dict['button'] == mappings['other']['configure']:
+    print(f'Press {controller.get_button_name(ButtonFunction.CONFIRM)} to shut down cameras or any other button to leave them on')
+    if controller.wait_for_button_press() == ButtonFunction.CONFIRM:
         for ip in ips:
             cam = Camera(ip)
             cam.set_power(False)
