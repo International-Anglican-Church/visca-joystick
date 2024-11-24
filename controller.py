@@ -1,7 +1,7 @@
 import time
 from enum import Enum
 import platform
-from typing import Iterable, Dict, List, Optional
+from typing import Iterable, Dict, List, Optional, Union
 
 import pygame
 
@@ -37,7 +37,7 @@ class AxisFunction(Enum):
 
 
 class ControllerInput:
-    def __init__(self, function: ButtonFunction | AxisFunction, label: str, xbox_label: Optional[str] = None, **pygame_button_nums):
+    def __init__(self, function: Union[ButtonFunction, AxisFunction], label: str, xbox_label: Optional[str] = None, **pygame_button_nums):
         self.function = function
         self.ps_label = label
         if xbox_label:
@@ -62,7 +62,7 @@ inputs = [
     ControllerInput(AxisFunction.TILT, 'Left Stick', id=1),
     ControllerInput(AxisFunction.ZOOM, 'Right Stick', linux_ps4=4, windows_ps4=3, xbox=4),
     ControllerInput(AxisFunction.BRIGHTNESS_UP, 'Right Trigger', id=5),
-    ControllerInput(AxisFunction.BRIGHTNESS_DOWN, 'Left Trigger', linux_ps4=2, win_ps4=5, xbox=2),
+    ControllerInput(AxisFunction.BRIGHTNESS_DOWN, 'Left Trigger', linux_ps4=2, win_ps4=4, xbox=2),
     ControllerInput(ButtonFunction.FOCUS_NEAR, 'Right Bumper', linux_ps4=4, win_ps4=9, xbox=5),
     ControllerInput(ButtonFunction.FOCUS_FAR, 'Left Bumper', linux_ps4=5, win_ps4=10, xbox=4),
     ControllerInput(ButtonFunction.PRESET_0, 'D-Pad', ps4=11),
@@ -82,14 +82,14 @@ class GameController:
         self._short_presses: List[ButtonFunction] = []
         self.last_reset_time = time.time()
 
-        if 'Sony' in self.joystick.get_name():
+        if 'Sony' in self.joystick.get_name() or 'PS4' in self.joystick.get_name():
             controller_type = 'ps4'
         elif 'Xbox' in self.joystick.get_name():
             controller_type = 'xbox'
         else:
             raise ValueError('Controller type not supported')
 
-        self._function_to_pygame: Dict[AxisFunction | ButtonFunction, int] = {
+        self._function_to_pygame: Dict[Union[AxisFunction, ButtonFunction], int] = {
             input.function: input.get_pygame_button_num(controller_type)
             for input in inputs
         }
