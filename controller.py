@@ -15,7 +15,7 @@ class ButtonFunction(Enum):
     CAM_SELECT_2 = 2
     CAM_SELECTS = (CAM_SELECT_0, CAM_SELECT_1, CAM_SELECT_2)
 
-    CONFIRM = 5
+    CONFIRM = 2
     EXIT = 6
     INVERT_TILT = 7
 
@@ -54,15 +54,15 @@ class ControllerInput:
 
 
 inputs = [
-    ControllerInput(ButtonFunction.CONFIRM, 'Triangle', 'Y', id=3),
-    ControllerInput(ButtonFunction.CAM_SELECT_0, 'X', 'A', linux_ps4=1, win_ps4=0, linux_xbox=0),
-    ControllerInput(ButtonFunction.CAM_SELECT_1, 'O', 'B', linux_ps4=2, win_ps4=1, linux_xbox=1),
-    ControllerInput(ButtonFunction.CAM_SELECT_2, 'Triangle', 'Y', id=3),
-    ControllerInput(AxisFunction.PAN, 'Left Stick', ps4=0, xbox=1),
-    ControllerInput(AxisFunction.TILT, 'Left Stick', ps4=1, xbox=2),
-    ControllerInput(AxisFunction.ZOOM, 'Right Stick', linux_ps4=5, windows_ps4=3, xbox=4),
-    ControllerInput(AxisFunction.BRIGHTNESS_UP, 'Right Trigger', linux_ps4=4, win_ps4=5, xbox=5),
-    ControllerInput(AxisFunction.BRIGHTNESS_DOWN, 'Left Trigger', linux_ps4=4, win_ps4=5, xbox=2),
+    ControllerInput(ButtonFunction.CONFIRM, 'Triangle', 'Y', ps4=2, xbox=3),
+    ControllerInput(ButtonFunction.CAM_SELECT_0, 'X', 'A', id=0),
+    ControllerInput(ButtonFunction.CAM_SELECT_1, 'O', 'B', id=1),
+    ControllerInput(ButtonFunction.CAM_SELECT_2, 'Triangle', 'Y', ps4=2, xbox=3),
+    ControllerInput(AxisFunction.PAN, 'Left Stick', id=0),
+    ControllerInput(AxisFunction.TILT, 'Left Stick', id=1),
+    ControllerInput(AxisFunction.ZOOM, 'Right Stick', linux_ps4=4, windows_ps4=3, xbox=4),
+    ControllerInput(AxisFunction.BRIGHTNESS_UP, 'Right Trigger', id=5),
+    ControllerInput(AxisFunction.BRIGHTNESS_DOWN, 'Left Trigger', linux_ps4=2, win_ps4=5, xbox=2),
     ControllerInput(ButtonFunction.FOCUS_NEAR, 'Right Bumper', linux_ps4=4, win_ps4=9, xbox=5),
     ControllerInput(ButtonFunction.FOCUS_FAR, 'Left Bumper', linux_ps4=5, win_ps4=10, xbox=4),
     ControllerInput(ButtonFunction.PRESET_0, 'D-Pad', ps4=11),
@@ -126,18 +126,22 @@ class GameController:
     def get_button_presses(self) -> Iterable[ButtonFunction]:
         presses = []
         for event in pygame.event.get(eventtype=pygame.JOYBUTTONDOWN):
-            presses.append(self._pygame_to_button[event.dict['button']])
-            self._down_times[presses[0]] = time.time()
+            pygame_id = event.dict['button']
+            if pygame_id in self._pygame_to_button:
+                presses.append(self._pygame_to_button[pygame_id])
+                self._down_times[presses[0]] = time.time()
 
         return presses
 
     def _record_long_short_presses(self):
         for event in pygame.event.get(eventtype=pygame.JOYBUTTONUP):
-            button = self._pygame_to_button[event.dict['button']]
-            if button in self._down_times and (time.time() - self._down_times[button]) > LONG_PRESS_TIME:
-                self._long_presses.append(button)
-            else:
-                self._short_presses.append(button)
+            pygame_id = event.dict['button']
+            if pygame_id in self._pygame_to_button:
+                button = self._pygame_to_button[pygame_id]
+                if button in self._down_times and (time.time() - self._down_times[button]) > LONG_PRESS_TIME:
+                    self._long_presses.append(button)
+                else:
+                    self._short_presses.append(button)
 
     def get_button_short_presses(self) -> Iterable[ButtonFunction]:
         """get_button_presses returns buttons that have been pressed down,
@@ -167,7 +171,7 @@ class GameController:
                     return input.ps_label
 
     def print_mappings(self):
-        print('fix your crap') # TODO
+        print('Andrew is too lazy to write button mapping text rn') # TODO
 
     def refresh_connection(self):
         """In case the controller is disconnected or has some comm problem, we reset the connection periodically."""

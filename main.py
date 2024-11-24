@@ -92,7 +92,7 @@ def main_loop(controller: GameController, camera: Camera):
             if pressed_button == ButtonFunction.EXIT:
                 shut_down(controller, camera)
 
-            elif pressed_button in [ButtonFunction.CAM_SELECTS]:
+            elif pressed_button.value in ButtonFunction.CAM_SELECTS.value:
                 camera = connect_to_camera(pressed_button.value, current_camera=camera)
 
             elif pressed_button == ButtonFunction.INVERT_TILT:
@@ -102,10 +102,12 @@ def main_loop(controller: GameController, camera: Camera):
         update_focus(controller, camera)
 
         for short_press in controller.get_button_short_presses():
-            camera.recall_preset(short_press.value)
+            if short_press.value in ButtonFunction.PRESETS.value:
+                camera.recall_preset(short_press.value)
 
         for long_press in controller.get_button_long_presses():
-            camera.save_preset(long_press.value)
+            if long_press.value in ButtonFunction.PRESETS.value:
+                camera.save_preset(long_press.value)
 
         if controller.get_axis(AxisFunction.BRIGHTNESS_UP) > .9:
             camera.increase_exposure_compensation()
@@ -115,7 +117,7 @@ def main_loop(controller: GameController, camera: Camera):
 
         camera.pantilt(
             pan_speed=joy_pos_to_cam_speed(controller.get_axis(AxisFunction.PAN), 'pan'),
-            tilt_speed=joy_pos_to_cam_speed(controller.get_axis(AxisFunction.TILT), 'tilt', invert_tilt)
+            tilt_speed=joy_pos_to_cam_speed(controller.get_axis(AxisFunction.TILT), 'tilt', not invert_tilt)
         )
         time.sleep(0.03)
         camera.zoom(joy_pos_to_cam_speed(controller.get_axis(AxisFunction.ZOOM), 'zoom'))
