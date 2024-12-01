@@ -54,15 +54,15 @@ class ControllerInput:
 
 
 inputs = [
-    ControllerInput(ButtonFunction.CONFIRM, 'Triangle', 'Y', ps4=2, xbox=3),
+    ControllerInput(ButtonFunction.CONFIRM, 'Triangle', 'Y', ps4=3, xbox=3),
     ControllerInput(ButtonFunction.CAM_SELECT_0, 'X', 'A', id=0),
     ControllerInput(ButtonFunction.CAM_SELECT_1, 'O', 'B', id=1),
-    ControllerInput(ButtonFunction.CAM_SELECT_2, 'Triangle', 'Y', ps4=2, xbox=3),
+    ControllerInput(ButtonFunction.CAM_SELECT_2, 'Triangle', 'Y', ps4=3, xbox=3),
     ControllerInput(AxisFunction.PAN, 'Left Stick', id=0),
     ControllerInput(AxisFunction.TILT, 'Left Stick', id=1),
-    ControllerInput(AxisFunction.ZOOM, 'Right Stick', linux_ps4=4, windows_ps4=3, xbox=4),
+    ControllerInput(AxisFunction.ZOOM, 'Right Stick', linux=4, windows=3),
     ControllerInput(AxisFunction.BRIGHTNESS_UP, 'Right Trigger', id=5),
-    ControllerInput(AxisFunction.BRIGHTNESS_DOWN, 'Left Trigger', linux_ps4=2, win_ps4=4, xbox=2),
+    ControllerInput(AxisFunction.BRIGHTNESS_DOWN, 'Left Trigger', linux=2, windows=4),
     ControllerInput(ButtonFunction.FOCUS_NEAR, 'Right Bumper', linux_ps4=4, win_ps4=9, xbox=5),
     ControllerInput(ButtonFunction.FOCUS_FAR, 'Left Bumper', linux_ps4=5, win_ps4=10, xbox=4),
     ControllerInput(ButtonFunction.PRESET_0, 'D-Pad', ps4=11),
@@ -70,7 +70,7 @@ inputs = [
     ControllerInput(ButtonFunction.PRESET_2, 'D-Pad', ps4=13),
     ControllerInput(ButtonFunction.PRESET_3, 'D-Pad', ps4=14),
     ControllerInput(ButtonFunction.EXIT, 'Options', linux_ps4=9, win_ps4=6, xbox=7),
-    ControllerInput(ButtonFunction.INVERT_TILT, 'Click L Stick', linux_ps4=10, win_ps4=7, xbox=9),
+    ControllerInput(ButtonFunction.INVERT_TILT, 'Click L Stick', linux_ps4=10, win_ps4=7, xbox=8),
 ]
 
 class GameController:
