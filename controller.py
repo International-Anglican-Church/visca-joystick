@@ -5,7 +5,7 @@ from typing import Iterable, Dict, List, Optional, Union
 
 import pygame
 
-RESET_INTERVAL = 20 # Seconds
+RESET_INTERVAL = 40 # Seconds
 LONG_PRESS_TIME = 2 # Seconds
 LINUX = platform.system() == 'Linux'
 

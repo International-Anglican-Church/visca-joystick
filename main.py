@@ -88,6 +88,8 @@ def main_loop(controller: GameController, camera: Camera):
     invert_tilt = False
 
     while True:
+        controller.refresh_connection()
+
         for pressed_button in controller.get_button_presses():
             if pressed_button == ButtonFunction.EXIT:
                 shut_down(controller, camera)
