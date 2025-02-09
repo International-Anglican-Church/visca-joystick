@@ -171,7 +171,22 @@ class GameController:
                     return input.ps_label
 
     def print_mappings(self):
-        print('Andrew is too lazy to write button mapping text rn') # TODO
+        print('The left stick controls the direction (pan and tilt) of the camera, and the right stick controls zoom.')
+        print('Click in the left stick to invert the tilt axis.')
+        print()
+        print('You can control three cameras one at a time. These buttons select the cameras:')
+        for function in ButtonFunction.CAM_SELECTS:
+            print(f'Camera {function + 1}: {self.get_button_name(function)}')
+
+        print()
+        print('The triggers control brightness (exposure compensation).')
+        print('Focus is auto by default, but you can enter manual focus by pressing both bumpers. '
+              'After that, you can adjust focus with the bumpers.')
+        print('The D-pad on only the Playstation controller controls presets. '
+              'Short presses recall presets and long presses set them.')
+        print()
+        print('Press options to exit.')
+
 
     def refresh_connection(self):
         """In case the controller is disconnected or has some comm problem, we reset the connection periodically."""
