@@ -5,7 +5,7 @@ from typing import Iterable, Dict, List, Optional, Union
 
 import pygame
 
-RESET_INTERVAL = 40 # Seconds
+RESET_INTERVAL = 60 # Seconds
 LONG_PRESS_TIME = 2 # Seconds
 LINUX = platform.system() == 'Linux'
 
@@ -190,8 +190,9 @@ class GameController:
 
     def refresh_connection(self):
         """In case the controller is disconnected or has some comm problem, we reset the connection periodically."""
-        if self.last_reset_time + RESET_INTERVAL > time.time():
+        if time.time() > self.last_reset_time + RESET_INTERVAL:
             self._pygame_init()
+            self.last_reset_time = time.time()
 
 
 if __name__ == '__main__':
