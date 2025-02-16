@@ -175,8 +175,8 @@ class GameController:
         print('Click in the left stick to invert the tilt axis.')
         print()
         print('You can control three cameras one at a time. These buttons select the cameras:')
-        for function in ButtonFunction.CAM_SELECTS:
-            print(f'Camera {function + 1}: {self.get_button_name(function)}')
+        for function in [ButtonFunction.CAM_SELECT_0, ButtonFunction.CAM_SELECT_1, ButtonFunction.CAM_SELECT_2]:
+            print(f'Camera {function.value + 1}: {self.get_button_name(function)}')
 
         print()
         print('The triggers control brightness (exposure compensation).')
